@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">etudiant-backend</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.etudiant.configuration.security</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.openclassrooms.etudiant.configuration.security;
+
+import com.openclassrooms.etudiant.service.JwtService;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+/**
+ * Filtre exécuté une fois par requête : si le header &quot;Authorization: Bearer &lt;token&gt;&quot;
+ * contient un JWT valide, l'utilisateur est déclaré authentifié auprès de Spring Security.
+ */
+<span class="fc" id="L25">@Slf4j</span>
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final String BEARER_PREFIX = &quot;Bearer &quot;;
+
+    private final JwtService jwtService;
+    private final CustomUserDetailService customUserDetailService;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+<span class="fc" id="L37">        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);</span>
+
+        // Pas de token : on laisse passer, Spring Security refusera l'accès aux routes protégées (401)
+<span class="pc bpc" id="L40" title="1 of 4 branches missed.">        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {</span>
+<span class="fc" id="L41">            filterChain.doFilter(request, response);</span>
+<span class="fc" id="L42">            return;</span>
+        }
+
+<span class="fc" id="L45">        String token = authorizationHeader.substring(BEARER_PREFIX.length());</span>
+        try {
+<span class="fc" id="L47">            String login = jwtService.extractUsername(token);</span>
+<span class="pc bpc" id="L48" title="2 of 4 branches missed.">            if (login != null &amp;&amp; SecurityContextHolder.getContext().getAuthentication() == null) {</span>
+<span class="fc" id="L49">                UserDetails userDetails = customUserDetailService.loadUserByUsername(login);</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">                if (jwtService.isTokenValid(token, userDetails)) {</span>
+<span class="fc" id="L51">                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(</span>
+<span class="fc" id="L52">                            userDetails, null, userDetails.getAuthorities());</span>
+<span class="fc" id="L53">                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));</span>
+<span class="fc" id="L54">                    SecurityContextHolder.getContext().setAuthentication(authentication);</span>
+                }
+            }
+<span class="nc" id="L57">        } catch (JwtException | UsernameNotFoundException exception) {</span>
+            // Token invalide, expiré ou utilisateur inconnu : la requête reste non authentifiée (401)
+<span class="nc" id="L59">            log.warn(&quot;Invalid JWT token: {}&quot;, exception.getMessage());</span>
+<span class="fc" id="L60">        }</span>
+
+<span class="fc" id="L62">        filterChain.doFilter(request, response);</span>
+<span class="fc" id="L63">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

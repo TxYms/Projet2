@@ -1,0 +1,49 @@
+<div class="card m-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Students</h5>
+    <div>
+      <a class="btn btn-primary btn-sm mr-1" routerLink="/students/new">Add a student</a>
+      <button class="btn btn-secondary btn-sm" type="button" (click)="onLogout()">Logout</button>
+    </div>
+  </div>
+  <div class="card-body">
+    @if (loading) {
+      <div>Loading...</div>
+    }
+
+    @if (errorMessage) {
+      <div class="alert alert-danger">{{ errorMessage }}</div>
+    }
+
+    @if (!loading && !errorMessage && students.length === 0) {
+      <div>No student yet.</div>
+    }
+
+    @if (students.length > 0) {
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Last name</th>
+            <th>First name</th>
+            <th>Email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (student of students; track student.id) {
+            <tr>
+              <td>{{ student.lastName }}</td>
+              <td>{{ student.firstName }}</td>
+              <td>{{ student.email }}</td>
+              <td>
+                <a class="btn btn-info btn-sm mr-1" [routerLink]="['/students', student.id]">View</a>
+                <a class="btn btn-warning btn-sm mr-1" [routerLink]="['/students', student.id, 'edit']">Edit</a>
+                <button class="btn btn-danger btn-sm" type="button" (click)="onDelete(student)">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

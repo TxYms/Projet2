@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StudentService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">etudiant-backend</a> &gt; <a href="index.source.html" class="el_package">com.openclassrooms.etudiant.service</a> &gt; <span class="el_source">StudentService.java</span></div><h1>StudentService.java</h1><pre class="source lang-java linenums">package com.openclassrooms.etudiant.service;
+
+import com.openclassrooms.etudiant.dto.StudentRequestDTO;
+import com.openclassrooms.etudiant.dto.StudentResponseDTO;
+import com.openclassrooms.etudiant.entities.Student;
+import com.openclassrooms.etudiant.exception.StudentNotFoundException;
+import com.openclassrooms.etudiant.mapper.StudentDtoMapper;
+import com.openclassrooms.etudiant.repository.StudentRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import java.util.List;
+
+<span class="fc" id="L17">@Slf4j</span>
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class StudentService {
+    private final StudentRepository studentRepository;
+    private final StudentDtoMapper studentDtoMapper;
+
+    public StudentResponseDTO create(StudentRequestDTO studentRequestDTO) {
+<span class="fc" id="L26">        Assert.notNull(studentRequestDTO, &quot;Student must not be null&quot;);</span>
+<span class="fc" id="L27">        log.info(&quot;Creating new student&quot;);</span>
+
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">        if (studentRepository.existsByEmail(studentRequestDTO.getEmail())) {</span>
+<span class="nc" id="L30">            throw new IllegalArgumentException(&quot;Student with email &quot; + studentRequestDTO.getEmail() + &quot; already exists&quot;);</span>
+        }
+<span class="fc" id="L32">        Student savedStudent = studentRepository.save(studentDtoMapper.toEntity(studentRequestDTO));</span>
+<span class="fc" id="L33">        return studentDtoMapper.toDto(savedStudent);</span>
+    }
+
+    public List&lt;StudentResponseDTO&gt; findAll() {
+<span class="fc" id="L37">        log.info(&quot;Fetching all students&quot;);</span>
+<span class="fc" id="L38">        return studentDtoMapper.toDtoList(studentRepository.findAll());</span>
+    }
+
+    public StudentResponseDTO findById(Long id) {
+<span class="fc" id="L42">        log.info(&quot;Fetching student {}&quot;, id);</span>
+<span class="fc" id="L43">        return studentDtoMapper.toDto(getStudentOrThrow(id));</span>
+    }
+
+    public StudentResponseDTO update(Long id, StudentRequestDTO studentRequestDTO) {
+<span class="fc" id="L47">        Assert.notNull(studentRequestDTO, &quot;Student must not be null&quot;);</span>
+<span class="fc" id="L48">        log.info(&quot;Updating student {}&quot;, id);</span>
+
+<span class="fc" id="L50">        Student student = getStudentOrThrow(id);</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">        if (studentRepository.existsByEmailAndIdNot(studentRequestDTO.getEmail(), id)) {</span>
+<span class="nc" id="L52">            throw new IllegalArgumentException(&quot;Student with email &quot; + studentRequestDTO.getEmail() + &quot; already exists&quot;);</span>
+        }
+<span class="fc" id="L54">        studentDtoMapper.updateEntity(studentRequestDTO, student);</span>
+<span class="fc" id="L55">        return studentDtoMapper.toDto(studentRepository.save(student));</span>
+    }
+
+    public void delete(Long id) {
+<span class="fc" id="L59">        log.info(&quot;Deleting student {}&quot;, id);</span>
+<span class="fc" id="L60">        studentRepository.delete(getStudentOrThrow(id));</span>
+<span class="fc" id="L61">    }</span>
+
+    private Student getStudentOrThrow(Long id) {
+<span class="fc" id="L64">        Assert.notNull(id, &quot;Id must not be null&quot;);</span>
+<span class="fc" id="L65">        return studentRepository.findById(id)</span>
+<span class="pc" id="L66">                .orElseThrow(() -&gt; new StudentNotFoundException(id));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
