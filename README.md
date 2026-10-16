@@ -1,52 +1,50 @@
-# EduBibliothèque – Testez et améliorez une application existante
+# Projet 2 – Testez et améliorez une application existante
 
-Projet OpenClassrooms (parcours Architecte Logiciel).
+Projet réalisé dans le cadre de ma formation Architecte Logiciel chez OpenClassrooms.
 
-L'application permet aux agents d'une bibliothèque de se connecter et de gérer les étudiants (ajout, consultation, modification, suppression).
+L'application sert aux agents d'une bibliothèque. Au départ, on pouvait seulement s'inscrire. J'ai réparé la connexion, ajouté la gestion des étudiants (ajout, liste, détail, modification, suppression), puis j'ai écrit les tests unitaires, d'intégration et E2E.
 
-## Organisation du dépôt
+## Contenu du repo
 
-| Dossier | Contenu |
-| --- | --- |
-| `back/` | API Spring Boot 3.5 (Java 21), base MySQL lancée avec Docker Compose |
-| `front/` | Application Angular 19 |
-| `rapports/` | Rapports de couverture et résultats des tests (back, front et E2E) |
+- `back/` : l'API en Spring Boot (Java 21), avec une base MySQL lancée par Docker
+- `front/` : l'application Angular
+- `rapports/` : les captures de mes rapports de couverture
 
-## Fonctionnalités ajoutées
+## Lancer le projet
 
-- Correction de l'API de connexion `POST /api/login` et génération d'un token JWT
-- Écran de connexion dans le front
-- API CRUD des étudiants `/api/students`, protégée par le token (header `Authorization: Bearer`)
-- Écrans de gestion des étudiants (liste, détail, ajout, modification, suppression), protégés par un guard Angular
+Il faut Java 21, Node.js et Docker Desktop.
 
-## Lancer l'application
+Pour le back :
+1. copier `back/.env.example` en `back/.env` et mettre une clé dans `JWT_SECRET` (clé en Base64)
+2. lancer Docker Desktop
+3. dans `back/`, lancer `./mvnw spring-boot:run` (l'API tourne sur le port 8080)
 
-Prérequis : JDK 21, Maven, Node.js, Docker Desktop.
-
-**Back-end**
-
-1. Copier `back/.env.example` en `back/.env` et renseigner `JWT_SECRET` (une clé Base64 de 256 bits).
-2. Lancer Docker Desktop.
-3. Dans `back/` : `./mvnw spring-boot:run` (API sur http://localhost:8080)
-
-**Front-end**
-
-Dans `front/` : `npm install` puis `npm run start` (application sur http://localhost:4200)
+Pour le front : dans `front/`, lancer `npm install` puis `npm start` (l'appli tourne sur http://localhost:4200).
 
 ## Lancer les tests
 
-| Tests | Commande | Rapport |
-| --- | --- | --- |
-| Back : unitaires (JUnit, Mockito) et intégration (MockMvc, Testcontainers) | dans `back/` : `./mvnw clean verify` (Docker lancé) | `back/target/site/jacoco/index.html` |
-| Front : unitaires et intégration (Jest) | dans `front/` : `npx jest` | `front/coverage/lcov-report/index.html` |
-| E2E (Cypress, API simulée avec `cy.intercept`) | dans `front/` : `npm run e2e` | `front/coverage-e2e/index.html` |
+- Back (JUnit, Mockito, Testcontainers) : `./mvnw clean verify` dans `back/`, avec Docker lancé
+- Front (Jest) : `npx jest` dans `front/`
+- E2E (Cypress) : `npm run e2e` dans `front/`
 
-Le seuil de couverture est fixé à 80 % des lignes : le build échoue en dessous (JaCoCo pour le back, Jest pour le front, nyc pour les E2E).
+Le seuil de couverture est de 80 % : si on passe en dessous, les tests échouent.
 
 ## Résultats
 
-| Tests | Nombre | Couverture des lignes | Rapport |
-| --- | --- | --- | --- |
-| Back (unitaires + intégration) | 25 | 87,6 % | `rapports/back-jacoco/index.html` (résultats des tests : `rapports/back-tests/`) |
-| Front Jest (unitaires + intégration) | 22 | 81,9 % | `rapports/front-jest/index.html` |
-| E2E Cypress | 4 scénarios | 83,4 % | `rapports/front-e2e/index.html` |
+| Tests | Nombre | Couverture des lignes |
+| --- | --- | --- |
+| Back (unitaires + intégration) | 25 | 87,6 % |
+| Front Jest (unitaires + intégration) | 22 | 82,0 % |
+| E2E Cypress | 4 scénarios | 96,7 % |
+
+**Back – JaCoCo**
+
+![Couverture back](rapports/couverture-back-jacoco.png)
+
+**Front – Jest**
+
+![Couverture front Jest](rapports/couverture-front-jest.png)
+
+**E2E – Cypress**
+
+![Couverture E2E](rapports/couverture-e2e-cypress.png)
